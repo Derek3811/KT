@@ -277,25 +277,30 @@ Output ONLY the resulting prompt, without any extra text or markdown formatting.
     if (client) {
       console.log("Step 3: Generating new image using styled prompt...");
       try {
-        const imageResponse = await client.models.generateImages({
-          model: "imagen-3.0-generate-002",
-          prompt: styledImagePrompt,
+        const imageResponse = await client.models.generateContent({
+          model: "gemini-2.5-flash-image",
+          contents: styledImagePrompt,
           config: {
-            numberOfImages: 1,
-            outputMimeType: "image/jpeg",
-            aspectRatio: "1:1",
+            imageConfig: {
+              aspectRatio: "1:1",
+            },
           },
         });
 
         let base64Data: string | null = null;
-        if (imageResponse?.generatedImages?.[0]?.image?.imageBytes) {
-          base64Data = imageResponse.generatedImages[0].image.imageBytes;
+        if (imageResponse?.candidates?.[0]?.content?.parts) {
+          for (const part of imageResponse.candidates[0].content.parts) {
+            if (part.inlineData?.data) {
+              base64Data = part.inlineData.data;
+              break;
+            }
+          }
         }
 
         if (base64Data) {
-          imageUrl = `data:image/jpeg;base64,${base64Data}`;
+          imageUrl = `data:image/png;base64,${base64Data}`;
         } else {
-          throw new Error("No image data found in generatedImages.");
+          throw new Error("No image data found in candidate parts.");
         }
       } catch (imgErr: any) {
         console.error("Failed to generate styled image via Gemini:", imgErr.message);
