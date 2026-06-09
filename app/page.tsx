@@ -266,6 +266,67 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {/* Reference Websites Card */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4 text-left">
+          <div className="border-b border-gray-100 pb-3">
+            <h2 className="text-md font-editorial-heading font-bold text-gray-900 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#C29C53] shrink-0" />
+              Active Editorial Reference Sources
+            </h2>
+            <p className="text-xs text-gray-500 font-body">Gemini uses Google Search grounding prioritised on these 6 target historical and liturgical resource websites to cross-verify feasts, saints' lives, and traditional prayers:</p>
+          </div>
+          
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs font-body text-gray-700">
+            <li className="flex flex-col p-3 bg-[#FAF9F5] border border-gray-150 rounded-xl space-y-1 hover:border-[#C29C53] transition-all">
+              <span className="font-mono text-[9px] font-bold text-[#800020] uppercase">1. Salve Maria Regina</span>
+              <span className="text-[10px] text-gray-400 font-mono truncate">Seasonal prayers & traditional Roman liturgy</span>
+              <a href="https://www.salvemariaregina.info/Prayers/Seasonal.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-block mt-1 font-mono text-[10px] truncate">
+                salvemariaregina.info/Prayers/Seasonal.html
+              </a>
+            </li>
+
+            <li className="flex flex-col p-3 bg-[#FAF9F5] border border-gray-150 rounded-xl space-y-1 hover:border-[#C29C53] transition-all">
+              <span className="font-mono text-[9px] font-bold text-[#800020] uppercase">2. Butler's Lives of the Saints</span>
+              <span className="text-[10px] text-gray-400 font-mono truncate">Bartleby literary & historical references</span>
+              <a href="https://www.bartleby.com/lit-hub/lives-of-the-saints/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-block mt-1 font-mono text-[10px] truncate">
+                bartleby.com/lit-hub/lives-of-the-saints
+              </a>
+            </li>
+
+            <li className="flex flex-col p-3 bg-[#FAF9F5] border border-gray-150 rounded-xl space-y-1 hover:border-[#C29C53] transition-all">
+              <span className="font-mono text-[9px] font-bold text-[#800020] uppercase">3. Sanctoral Lives of the Saints</span>
+              <span className="text-[10px] text-gray-400 font-mono truncate">Full traditional Roman martyrology logs</span>
+              <a href="https://sanctoral.com/en/saints/index.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-block mt-1 font-mono text-[10px] truncate">
+                sanctoral.com/en/saints/index.html
+              </a>
+            </li>
+
+            <li className="flex flex-col p-3 bg-[#FAF9F5] border border-gray-150 rounded-xl space-y-1 hover:border-[#C29C53] transition-all">
+              <span className="font-mono text-[9px] font-bold text-[#800020] uppercase">4. Lives of the Saints (Sacred Texts)</span>
+              <span className="text-[10px] text-gray-400 font-mono truncate">Complete classic hagiography repository</span>
+              <a href="https://www.sacred-texts.com/chr/lots/index.htm" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-block mt-1 font-mono text-[10px] truncate">
+                sacred-texts.com/chr/lots/index.htm
+              </a>
+            </li>
+
+            <li className="flex flex-col p-3 bg-[#FAF9F5] border border-gray-150 rounded-xl space-y-1 hover:border-[#C29C53] transition-all">
+              <span className="font-mono text-[9px] font-bold text-[#800020] uppercase">5. Catholic Harbor of Faith and Morals</span>
+              <span className="text-[10px] text-gray-400 font-mono truncate">Catechetical guides and traditional devotions</span>
+              <a href="https://catholicharboroffaithandmorals.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-block mt-1 font-mono text-[10px] truncate">
+                catholicharboroffaithandmorals.com
+              </a>
+            </li>
+
+            <li className="flex flex-col p-3 bg-[#FAF9F5] border border-gray-150 rounded-xl space-y-1 hover:border-[#C29C53] transition-all">
+              <span className="font-mono text-[9px] font-bold text-[#800020] uppercase">6. SSPX Asia (The Church Year)</span>
+              <span className="text-[10px] text-gray-400 font-mono truncate">Liturgical explanations and encyclical records</span>
+              <a href="https://www.sspxasia.com/Documents/The_Church_Year/index.htm" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-block mt-1 font-mono text-[10px] truncate">
+                sspxasia.com/Documents/The_Church_Year
+              </a>
+            </li>
+          </ul>
+        </div>
       </main>
 
       {/* Footer copyright */}

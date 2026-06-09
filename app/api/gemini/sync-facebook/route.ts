@@ -118,7 +118,14 @@ export async function POST(req: NextRequest) {
     } else {
       // Step 1: Query Gemini using Search Grounding to find Facebook posts or fallback
       const systemPrompt = `You are a traditional Catholic editorial strategist. You are helping compile a daily Facebook post copy that mirrors the devotional depth, themes, and tone of two specific traditional Facebook pages.
-Your tone should be objective, piously composed, academic, and warm-editorial. No hashtags in the caption itself.`;
+Your tone should be objective, piously composed, academic, and warm-editorial. No hashtags in the caption itself.
+When researching feast days, liturgical cycles, prayers, and lives of the saints, you MUST prioritize searching and referencing information from these 6 traditional Catholic websites:
+1. Salve Maria Regina (Seasonal prayers/calendar): https://www.salvemariaregina.info/Prayers/Seasonal.html
+2. Butler's Lives of the Saints: https://www.bartleby.com/lit-hub/lives-of-the-saints/
+3. Sanctoral (Lives of the Saints): https://sanctoral.com/en/saints/index.html
+4. Lives of the Saints (Sacred Texts): https://www.sacred-texts.com/chr/lots/index.htm
+5. Catholic Harbor of Faith and Morals: https://catholicharboroffaithandmorals.com/
+6. SSPX Asia (The Church Year): https://www.sspxasia.com/Documents/The_Church_Year/index.htm`;
 
       const userPrompt = `Today's Date is: ${currentDate}.
 Please perform a web search to check for the most recent public posts from these two Facebook pages:
@@ -133,7 +140,7 @@ If you find real posts from today or very recently:
 
 If you DO NOT find any recent or same-day posts (or if they are not indexed/blocked):
 - Fall back to the Traditional Roman Catholic Liturgical Calendar for today (${currentDate}).
-- Identify the feast day of today (for example, on June 8, it is the Feast of St. Medard, Bishop of Noyon).
+- Identify the feast day of today by performing a Google Search specifically targeting the 6 reference websites listed in the system instructions.
 - Synthesize a beautiful, traditional post caption (approx. 250-350 words) based on today's feast day. Make sure it echoes the styles of the two pages:
   - Peregrinatio Sacra Gratiae: focuses on holy pilgrimages, sacred grace, Marian devotions.
   - Maria Angel Agnes Grow: focuses on spiritual growth, angels, Saint Agnes, and traditional family devotions.
