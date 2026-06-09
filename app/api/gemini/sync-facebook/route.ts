@@ -227,9 +227,8 @@ IMPORTANT: Output ONLY the raw JSON object. Do not wrap it in markdown code bloc
               },
             },
             `You are a professional image stylist. Analyze the attached traditional Catholic artwork.
-Write a highly detailed, descriptive prompt (under 120 words) for a text-to-image generator to create a new, unique image in this EXACT style.
-The new image should represent the concept: "${imageConcept}".
-Incorporate style features like the 17th century baroque/renaissance oil painting medium, deep rich colors (gold, crimson, marian blue, warm ivory), chiaroscuro light from a divine source, angel forms, and any gold scroll/gilt borders.
+Write a detailed, descriptive prompt (under 120 words) for a text-to-image generator to create a new, unique image of: "${imageConcept}".
+The style of the new image must EXACTLY match the artistic style (brushstrokes, medium, lighting, color palette, composition type) of the attached reference artwork, but it must depict "${imageConcept}" instead of the subject in the reference image. Do not describe the original subject of the reference image; only describe its style applied to "${imageConcept}".
 Output ONLY the resulting prompt, without any extra text or markdown formatting.`,
           ],
         });
@@ -248,30 +247,25 @@ Output ONLY the resulting prompt, without any extra text or markdown formatting.
     if (client) {
       console.log("Step 3: Generating new image using styled prompt...");
       try {
-        const imageResponse = await client.models.generateContent({
-          model: "gemini-2.5-flash-image",
-          contents: styledImagePrompt,
+        const imageResponse = await client.models.generateImages({
+          model: "imagen-3.0-generate-002",
+          prompt: styledImagePrompt,
           config: {
-            imageConfig: {
-              aspectRatio: "1:1",
-            },
+            numberOfImages: 1,
+            outputMimeType: "image/jpeg",
+            aspectRatio: "1:1",
           },
         });
 
         let base64Data: string | null = null;
-        if (imageResponse?.candidates?.[0]?.content?.parts) {
-          for (const part of imageResponse.candidates[0].content.parts) {
-            if (part.inlineData?.data) {
-              base64Data = part.inlineData.data;
-              break;
-            }
-          }
+        if (imageResponse?.generatedImages?.[0]?.image?.imageBytes) {
+          base64Data = imageResponse.generatedImages[0].image.imageBytes;
         }
 
         if (base64Data) {
-          imageUrl = `data:image/png;base64,${base64Data}`;
+          imageUrl = `data:image/jpeg;base64,${base64Data}`;
         } else {
-          throw new Error("No image data found in candidate parts.");
+          throw new Error("No image data found in generatedImages.");
         }
       } catch (imgErr: any) {
         console.error("Failed to generate styled image via Gemini:", imgErr.message);

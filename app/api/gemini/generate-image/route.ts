@@ -73,31 +73,26 @@ Rich deep oil colors (gold, crimson red, marian blue, emerald green), dramatic w
 fine historic textures, traditional Catholic holy card design. No modern filters, highly respectful and pious.`;
 
     try {
-      const response = await client.models.generateContent({
-        model: "gemini-2.5-flash-image",
-        contents: enhancedPrompt,
+      const response = await client.models.generateImages({
+        model: "imagen-3.0-generate-002",
+        prompt: enhancedPrompt,
         config: {
-          imageConfig: {
-            aspectRatio: "1:1",
-          }
+          numberOfImages: 1,
+          outputMimeType: "image/jpeg",
+          aspectRatio: "1:1",
         },
       });
 
       let base64Data: string | null = null;
-      if (response?.candidates?.[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData?.data) {
-            base64Data = part.inlineData.data;
-            break;
-          }
-        }
+      if (response?.generatedImages?.[0]?.image?.imageBytes) {
+        base64Data = response.generatedImages[0].image.imageBytes;
       }
 
       if (!base64Data) {
-        throw new Error("Gemini model returned response but no inline image data was found.");
+        throw new Error("Gemini model returned response but no inline image data was found in generatedImages.");
       }
 
-      const imageUrl = `data:image/png;base64,${base64Data}`;
+      const imageUrl = `data:image/jpeg;base64,${base64Data}`;
       return NextResponse.json({ imageUrl, isDemo: false });
     } catch (genErr: any) {
       console.warn("Gemini Image generation experiences high demand (503). Gracefully serving preset beautiful alternative:", genErr.message);
