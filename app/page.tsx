@@ -363,19 +363,41 @@ export default function Home() {
                 </h2>
                 <p className="text-xs text-gray-500 font-body">Review and retrieve previously generated content and images from local memory.</p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm("Are you sure you want to clear your run history?")) {
-                    setHistoryResult([]);
-                    localStorage.removeItem("catholic_sync_history");
-                    showToast("History cleared successfully!");
-                  }
-                }}
-                className="text-[10px] font-mono font-bold text-red-700 hover:underline cursor-pointer"
-              >
-                Clear History
-              </button>
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    historyResult.forEach((run, index) => {
+                      setTimeout(() => {
+                        const link = document.createElement("a");
+                        link.href = run.imageUrl;
+                        const cleanTitle = run.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                        link.download = `sacred-photo-${cleanTitle}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }, index * 250); // Stagger downloads by 250ms to prevent browser blocking
+                    });
+                    showToast(`Downloading all ${historyResult.length} photos...`);
+                  }}
+                  className="text-[10px] font-mono font-bold text-[#800020] hover:underline cursor-pointer"
+                >
+                  Download All Photos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm("Are you sure you want to clear your run history?")) {
+                      setHistoryResult([]);
+                      localStorage.removeItem("catholic_sync_history");
+                      showToast("History cleared successfully!");
+                    }
+                  }}
+                  className="text-[10px] font-mono font-bold text-red-700 hover:underline cursor-pointer"
+                >
+                  Clear History
+                </button>
+              </div>
             </div>
 
             <div className="space-y-3.5 max-h-[400px] overflow-y-auto pr-1">
