@@ -22,6 +22,31 @@ export default function Home() {
     referenceImageName: string;
   } | null>(null);
 
+  // Run History State
+  const [historyResult, setHistoryResult] = useState<{
+    id: string;
+    timestamp: string;
+    sourceFound: boolean;
+    sourceSummary: string;
+    title: string;
+    caption: string;
+    imageUrl: string;
+    imagePrompt: string;
+    referenceImageName: string;
+  }[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = window.localStorage.getItem("catholic_sync_history");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.warn("Could not load sync history from local storage.", e);
+        }
+      }
+    }
+    return [];
+  });
+
   // Success messaging
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -64,6 +89,31 @@ export default function Home() {
       const data = await res.json();
       if (data.success) {
         setSyncResult(data);
+        
+        const newHistoryItem = {
+          id: `sync-${Date.now()}`,
+          timestamp: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+          }),
+          sourceFound: data.sourceFound,
+          sourceSummary: data.sourceSummary,
+          title: data.title,
+          caption: data.caption,
+          imageUrl: data.imageUrl,
+          imagePrompt: data.imagePrompt,
+          referenceImageName: data.referenceImageName,
+        };
+
+        setHistoryResult((prev) => {
+          const updated = [newHistoryItem, ...prev].slice(0, 10); // Keep at most last 10 runs
+          localStorage.setItem("catholic_sync_history", JSON.stringify(updated));
+          return updated;
+        });
+
         showToast("Facebook Daily Sync completed successfully!");
       } else {
         showToast("Sync failed: " + (data.error || "Unknown error"));
@@ -266,6 +316,90 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {/* History Ledger Card */}
+        {historyResult.length > 0 && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4 text-left">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-100 pb-3">
+              <div className="space-y-0.5">
+                <h2 className="text-md font-editorial-heading font-bold text-gray-900 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#C29C53]" />
+                  Sync Run History (Last {historyResult.length} Runs)
+                </h2>
+                <p className="text-xs text-gray-500 font-body">Review and retrieve previously generated content and images from local memory.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("Are you sure you want to clear your run history?")) {
+                    setHistoryResult([]);
+                    localStorage.removeItem("catholic_sync_history");
+                    showToast("History cleared successfully!");
+                  }
+                }}
+                className="text-[10px] font-mono font-bold text-red-700 hover:underline cursor-pointer"
+              >
+                Clear History
+              </button>
+            </div>
+
+            <div className="space-y-3.5 max-h-[400px] overflow-y-auto pr-1">
+              {historyResult.map((run) => (
+                <div key={run.id} className="p-3 bg-[#FAF9F5] border border-gray-150 rounded-xl flex flex-col md:flex-row justify-between gap-4 hover:border-[#C29C53] transition-all">
+                  <div className="flex items-start gap-3 flex-grow min-w-0">
+                    {/* Thumbnail */}
+                    <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-stone-100 shrink-0 relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={run.imageUrl} alt={run.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    </div>
+
+                    {/* Metadata & Title */}
+                    <div className="space-y-1 min-w-0 flex-grow">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[8px] font-mono bg-stone-200 text-stone-700 px-1.5 py-0.5 rounded-sm uppercase font-bold">
+                          {run.timestamp}
+                        </span>
+                        <span className="text-[8.5px] font-mono text-gray-400">
+                          {run.sourceSummary}
+                        </span>
+                      </div>
+                      <h4 className="font-editorial-heading text-xs font-bold text-gray-900 truncate">
+                        {run.title}
+                      </h4>
+                      <p className="text-[10px] text-gray-600 line-clamp-2 leading-relaxed italic">
+                        &ldquo;{run.caption}&rdquo;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex md:flex-col justify-end items-end gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSyncResult(run);
+                        showToast("Loaded run into main view!");
+                      }}
+                      className="text-[10px] font-mono font-bold bg-[#1C1B19] text-white px-2.5 py-1 rounded-md hover:bg-[#C29C53] hover:text-[#1C1B19] transition-all cursor-pointer"
+                    >
+                      Load View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(run.caption);
+                        showToast("Copied caption to clipboard!");
+                      }}
+                      className="text-[10px] font-mono font-bold text-[#800020] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Copy className="w-3 h-3" /> Copy Text
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Reference Websites Card */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4 text-left">
