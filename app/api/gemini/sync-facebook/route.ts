@@ -85,7 +85,7 @@ function getDailyFallback(currentDateStr: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { url1, url2 } = await req.json();
+    const { url1, url2, customTopic } = await req.json();
 
     const targetUrl1 = url1 || "https://www.facebook.com/people/Peregrinatio-Sacra-Gratiae/100077721485830/";
     const targetUrl2 = url2 || "https://www.facebook.com/MariaAngelAgnesGrow?mibextid=wwXIfr";
@@ -108,13 +108,20 @@ export async function POST(req: NextRequest) {
 
     // Check if client is initialized
     if (!client) {
-      console.warn("GEMINI_API_KEY is not defined. Using offline static liturgical calendar fallback.");
-      const fallback = getDailyFallback(currentDate);
-      sourceFound = fallback.sourceFound;
-      sourceSummary = fallback.sourceSummary;
-      title = fallback.title;
-      caption = fallback.caption;
-      imageConcept = fallback.imageConcept;
+      if (customTopic) {
+        title = `Devotional Reflection: ${customTopic}`;
+        caption = `Today we reflect upon the profound traditional spiritual significance of ${customTopic}. In our journey of faith, the contemplation of this sacred mystery serves to elevate our hearts to the divine. Let us cultivate a spirit of prayer, penance, and unyielding fidelity, keeping the deposit of traditional Catholic teachings alive in our daily actions.`;
+        imageConcept = `Traditional painting representing ${customTopic}, baroque style`;
+        sourceSummary = `Custom Topic Override (Offline Fallback)`;
+      } else {
+        console.warn("GEMINI_API_KEY is not defined. Using offline static liturgical calendar fallback.");
+        const fallback = getDailyFallback(currentDate);
+        sourceFound = fallback.sourceFound;
+        sourceSummary = fallback.sourceSummary;
+        title = fallback.title;
+        caption = fallback.caption;
+        imageConcept = fallback.imageConcept;
+      }
     } else {
       // Step 1: Query Gemini using Search Grounding to find Facebook posts or fallback
       const systemPrompt = `You are a traditional Catholic editorial strategist. You are helping compile a daily Facebook post copy that mirrors the devotional depth, themes, and tone of two specific traditional Facebook pages.
@@ -127,7 +134,25 @@ When researching feast days, liturgical cycles, prayers, and lives of the saints
 5. Catholic Harbor of Faith and Morals: https://catholicharboroffaithandmorals.com/
 6. SSPX Asia (The Church Year): https://www.sspxasia.com/Documents/The_Church_Year/index.htm`;
 
-      const userPrompt = `Today's Date is: ${currentDate}.
+      let userPrompt = "";
+      if (customTopic) {
+        userPrompt = `Today's Date is: ${currentDate}.
+Please write a detailed devotional Facebook post caption (approx. 250-350 words) specifically focused on the custom topic: "${customTopic}".
+Search and reference the 6 traditional Catholic websites in the system instructions to make sure the hagiography, history, or theological details are completely accurate and deep.
+Make the tone mirror the style of these pages:
+- Peregrinatio Sacra Gratiae: focuses on holy pilgrimages, sacred grace, Marian devotions.
+- Maria Angel Agnes Grow: focuses on spiritual growth, angels, Saint Agnes, and traditional family devotions.
+
+Please return a JSON response containing:
+1. "sourceFound": boolean (set to false since this is a custom override topic).
+2. "sourceSummary": string (set this to "Custom Topic: ${customTopic}").
+3. "title": string (suggested title of the generated post).
+4. "caption": string (the drafted Facebook post caption, ending with a pious reflection).
+5. "imageConcept": string (a clear, descriptive 1-sentence prompt for image generation, representing the subject, e.g. "St. Joseph holding the lily flower in a traditional workshop").
+
+IMPORTANT: Output ONLY the raw JSON object. Do not wrap it in markdown code blocks or add any other text outside the JSON.`;
+      } else {
+        userPrompt = `Today's Date is: ${currentDate}.
 Please perform a web search to check for the most recent public posts from these two Facebook pages:
 1. Peregrinatio Sacra Gratiae: ${targetUrl1}
 2. Maria Angel Agnes Grow: ${targetUrl2}
@@ -153,6 +178,7 @@ Please return a JSON response containing:
 5. "imageConcept": string (a clear, descriptive 1-sentence prompt for image generation, representing the subject, e.g. "St. Medard standing in Noyon cathedral holding a rose crown").
 
 IMPORTANT: Output ONLY the raw JSON object. Do not wrap it in markdown code blocks or add any other text outside the JSON.`;
+      }
 
       try {
         console.log("Step 1: Searching Facebook pages or Liturgical Calendar fallback...");

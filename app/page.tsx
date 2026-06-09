@@ -10,6 +10,7 @@ export default function Home() {
   // Facebook Daily Sync States
   const [facebookUrl1, setFacebookUrl1] = useState<string>("https://www.facebook.com/people/Peregrinatio-Sacra-Gratiae/100077721485830/");
   const [facebookUrl2, setFacebookUrl2] = useState<string>("https://www.facebook.com/MariaAngelAgnesGrow?mibextid=wwXIfr");
+  const [customTopic, setCustomTopic] = useState<string>("");
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncLogs, setSyncLogs] = useState<string[]>([]);
   const [syncResult, setSyncResult] = useState<{
@@ -63,16 +64,26 @@ export default function Home() {
     setSyncLogs([]);
     setSyncResult(null);
 
-    const logs = [
-      "Initializing connection to Facebook pages...",
-      "Scanning user page: Peregrinatio-Sacra-Gratiae...",
-      "Scanning friend page: MariaAngelAgnesGrow...",
-      "Analyzing recent posts and calendar for matching dates...",
-      "Reading style references from sample/001 folder...",
-      "Running Gemini image style-transfer model...",
-      "Generating style-matched pious photo...",
-      "Sync completed successfully!"
-    ];
+    const logs = customTopic.trim()
+      ? [
+          `Initializing custom draft for: "${customTopic.trim()}"...`,
+          "Loading hagiography and historical archives...",
+          "Consulting prioritized traditional references...",
+          "Reading style references from sample/001 folder...",
+          "Running Gemini image style-transfer model...",
+          "Generating style-matched pious photo...",
+          "Post compiled successfully!"
+        ]
+      : [
+          "Initializing connection to Facebook pages...",
+          "Scanning user page: Peregrinatio-Sacra-Gratiae...",
+          "Scanning friend page: MariaAngelAgnesGrow...",
+          "Analyzing recent posts and calendar for matching dates...",
+          "Reading style references from sample/001 folder...",
+          "Running Gemini image style-transfer model...",
+          "Generating style-matched pious photo...",
+          "Sync completed successfully!"
+        ];
 
     // Show visual step-by-step progress logging
     for (let i = 0; i < logs.length; i++) {
@@ -84,11 +95,16 @@ export default function Home() {
       const res = await fetch("/api/gemini/sync-facebook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url1: facebookUrl1, url2: facebookUrl2 }),
+        body: JSON.stringify({ 
+          url1: facebookUrl1, 
+          url2: facebookUrl2,
+          customTopic: customTopic.trim()
+        }),
       });
       const data = await res.json();
       if (data.success) {
         setSyncResult(data);
+        setCustomTopic(""); // Reset the custom topic override input
         
         const newHistoryItem = {
           id: `sync-${Date.now()}`,
@@ -114,9 +130,9 @@ export default function Home() {
           return updated;
         });
 
-        showToast("Facebook Daily Sync completed successfully!");
+        showToast("Devotional post completed successfully!");
       } else {
-        showToast("Sync failed: " + (data.error || "Unknown error"));
+        showToast("Generation failed: " + (data.error || "Unknown error"));
       }
     } catch (err: any) {
       showToast("Network error: " + err.message);
@@ -207,6 +223,22 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Custom Topic Override (Optional) */}
+            <div className="space-y-1 pt-1.5">
+              <label htmlFor="fb-custom-topic" className="text-[10px] font-mono text-gray-400 uppercase font-bold block">
+                Custom Topic / Saint / Devotion (Optional Override)
+              </label>
+              <input 
+                id="fb-custom-topic"
+                type="text"
+                value={customTopic}
+                onChange={(e) => setCustomTopic(e.target.value)}
+                className="w-full bg-[#FAF9F5] border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-gray-900 focus:ring-1 focus:ring-[#C29C53] focus:border-[#C29C53] focus:bg-white transition-colors placeholder:text-gray-300"
+                placeholder="e.g. Saint Joseph, Mother of Sorrows, Guardian Angels..."
+              />
+              <p className="text-[10px] text-gray-400 font-body">If provided, the system will bypass Facebook scanning and write a custom post about this topic instead.</p>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 id="btn-run-fb-sync"
@@ -218,12 +250,12 @@ export default function Home() {
                 {isSyncing ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Syncing...</span>
+                    <span>Processing...</span>
                   </>
                 ) : (
                   <>
                     <RefreshCw className="w-3.5 h-3.5" />
-                    <span>RUN FACEBOOK SYNC</span>
+                    <span>{customTopic.trim() ? "GENERATE CUSTOM POST" : "RUN DAILY AUTO-COPIER"}</span>
                   </>
                 )}
               </button>
@@ -251,25 +283,28 @@ export default function Home() {
                   <p className="text-[10px] text-gray-500 font-body">Source: {syncResult.sourceSummary}</p>
                 </div>
                 <span className="text-[9px] font-mono bg-green-100 text-green-800 px-2 py-0.5 rounded-full border border-green-200 font-bold uppercase">
-                  {syncResult.sourceFound ? "Real Post Found" : "Liturgical Fallback"}
+                  {syncResult.sourceFound ? "Real Post Found" : "Liturgical Reference"}
                 </span>
               </div>
 
               {/* Title & Caption */}
               <div className="space-y-2">
                 <div className="space-y-1">
-                  <span className="text-[9px] font-mono text-gray-400 uppercase font-bold">Title/Subject</span>
-                  <div className="text-xs font-editorial-heading font-bold text-gray-900 bg-white border border-gray-150 p-2.5 rounded-lg">
-                    {syncResult.title}
-                  </div>
+                  <span className="text-[9px] font-mono text-gray-400 uppercase font-bold">Title/Subject (Editable)</span>
+                  <input
+                    type="text"
+                    value={syncResult.title}
+                    onChange={(e) => setSyncResult({ ...syncResult, title: e.target.value })}
+                    className="w-full text-xs font-editorial-heading font-bold text-gray-900 bg-white border border-gray-150 p-2.5 rounded-lg focus:ring-1 focus:ring-[#C29C53] focus:border-[#C29C53] focus:outline-none"
+                  />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[9px] font-mono text-gray-400 uppercase font-bold">Facebook Post Caption (Copy/Paste)</span>
+                  <span className="text-[9px] font-mono text-gray-400 uppercase font-bold">Facebook Post Caption (Editable)</span>
                   <textarea
-                    rows={6}
-                    readOnly
+                    rows={8}
                     value={syncResult.caption}
-                    className="w-full text-xs font-body leading-relaxed text-gray-800 bg-white border border-gray-150 p-2.5 rounded-lg focus:outline-none"
+                    onChange={(e) => setSyncResult({ ...syncResult, caption: e.target.value })}
+                    className="w-full text-xs font-body leading-relaxed text-gray-850 bg-white border border-gray-150 p-2.5 rounded-lg focus:ring-1 focus:ring-[#C29C53] focus:border-[#C29C53] focus:outline-none"
                   />
                   <div className="flex gap-4">
                     <button
@@ -308,7 +343,7 @@ export default function Home() {
                     <span className="text-[9px] font-mono text-gray-400 uppercase font-bold block">Style Reference Used</span>
                     <span className="text-[10px] font-serif text-gray-600 block italic">From folder sample/001:</span>
                     <span className="text-[10px] font-mono font-bold text-gray-900 bg-white border border-gray-150 px-2 py-1 rounded-md inline-block">
-                      {syncResult.referenceImageName}
+                      {syncResult.referenceImageName || "Liturgical fallback"}
                     </span>
                   </div>
                 </div>
