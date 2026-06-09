@@ -124,9 +124,18 @@ export async function POST(req: NextRequest) {
       }
     } else {
       // Step 1: Query Gemini using Search Grounding to find Facebook posts or fallback
-      const systemPrompt = `You are a traditional Catholic editorial strategist. You are helping compile a daily Facebook post copy that mirrors the devotional depth, themes, and tone of two specific traditional Facebook pages.
-Your tone should be objective, piously composed, academic, and warm-editorial. No hashtags in the caption itself.
-When researching feast days, liturgical cycles, prayers, and lives of the saints, you MUST prioritize searching and referencing information from these 6 traditional Catholic websites:
+      const systemPrompt = `You are a traditional Catholic editorial writer. You write deep, piously composed, and warm devotional social media posts that feel completely human, authentic, and intellectually rich.
+Avoid all AI-like writing clichés: do NOT use transitions like "In conclusion," "Moreover," "Furthermore," "Indeed," "It is important to remember," or repetitive phrases. Vary your sentence structure—mix short, direct assertions with long, flowing, meditative clauses.
+
+When writing the Facebook post caption:
+- Write exactly 3 to 4 distinct paragraphs (250-350 words total). Never output a single sentence.
+- Paragraph 1 (Liturgical Setting & Connection): Start with an engaging, human opening connecting the liturgical feast or custom topic to the current season, daily life, or spiritual state. Ground the reader in historical context or geography.
+- Paragraph 2 (Hagiographical or Theological Depth): Share rich, historical details about the saint's life, virtues, trials, or the theological mystery, drawing from the 6 reference websites. Write as if you have read these old books yourself and are explaining them.
+- Paragraph 3 (Practical Devotion): Provide warm, practical advice or a spiritual remedy for the modern traditional family or individual.
+- Paragraph 4 (Solemn Closing & Prayer): End with a beautiful, traditional aspiration or prayer (e.g., "Cor Jesu Sacratissimum, miserere nobis," or "Saint Columba, pray for us").
+
+Your tone must be warm, editorial, devout, and natural. Do NOT use hashtags in the caption text.
+You MUST prioritize searching and referencing information from these 6 traditional Catholic websites:
 1. Salve Maria Regina (Seasonal prayers/calendar): https://www.salvemariaregina.info/Prayers/Seasonal.html
 2. Butler's Lives of the Saints: https://www.bartleby.com/lit-hub/lives-of-the-saints/
 3. Sanctoral (Lives of the Saints): https://sanctoral.com/en/saints/index.html
@@ -137,17 +146,14 @@ When researching feast days, liturgical cycles, prayers, and lives of the saints
       let userPrompt = "";
       if (customTopic) {
         userPrompt = `Today's Date is: ${currentDate}.
-Please write a detailed devotional Facebook post caption (approx. 250-350 words) specifically focused on the custom topic: "${customTopic}".
-Search and reference the 6 traditional Catholic websites in the system instructions to make sure the hagiography, history, or theological details are completely accurate and deep.
-Make the tone mirror the style of these pages:
-- Peregrinatio Sacra Gratiae: focuses on holy pilgrimages, sacred grace, Marian devotions.
-- Maria Angel Agnes Grow: focuses on spiritual growth, angels, Saint Agnes, and traditional family devotions.
+Please write a detailed devotional Facebook post caption (approx. 250-350 words, structured into 3 to 4 paragraphs as described in the system instructions) specifically focused on the custom topic: "${customTopic}".
+Search and reference the 6 traditional Catholic websites in the system instructions to make sure the hagiography, history, or theological details are completely accurate, deep, and human-sounding.
 
 Please return a JSON response containing:
 1. "sourceFound": boolean (set to false since this is a custom override topic).
 2. "sourceSummary": string (set this to "Custom Topic: ${customTopic}").
 3. "title": string (suggested title of the generated post).
-4. "caption": string (the drafted Facebook post caption, ending with a pious reflection).
+4. "caption": string (the drafted Facebook post caption, split into 3-4 paragraphs, ending with a pious reflection).
 5. "imageConcept": string (a clear, descriptive 1-sentence prompt for image generation, representing the subject, e.g. "St. Joseph holding the lily flower in a traditional workshop").
 
 IMPORTANT: Output ONLY the raw JSON object. Do not wrap it in markdown code blocks or add any other text outside the JSON.`;
@@ -161,20 +167,18 @@ Specifically check for any posts published on the same day (${currentDate}) or w
 
 If you find real posts from today or very recently:
 - Summarize what they wrote about.
-- Draft a NEW, unique but similar devotional Facebook post caption (approx. 250-350 words) that shares a similar message, incorporating traditional Catholic quotes or teachings. Make it deep, detailed, and theological.
+- Draft a NEW, unique but similar devotional Facebook post caption (approx. 250-350 words, structured into 3 to 4 paragraphs as described in the system instructions) that shares a similar message, incorporating traditional Catholic quotes or teachings. Make it deep, detailed, and theological.
 
 If you DO NOT find any recent or same-day posts (or if they are not indexed/blocked):
 - Fall back to the Traditional Roman Catholic Liturgical Calendar for today (${currentDate}).
 - Identify the feast day of today by performing a Google Search specifically targeting the 6 reference websites listed in the system instructions.
-- Synthesize a beautiful, traditional post caption (approx. 250-350 words) based on today's feast day. Make sure it echoes the styles of the two pages:
-  - Peregrinatio Sacra Gratiae: focuses on holy pilgrimages, sacred grace, Marian devotions.
-  - Maria Angel Agnes Grow: focuses on spiritual growth, angels, Saint Agnes, and traditional family devotions.
+- Synthesize a beautiful, traditional post caption (approx. 250-350 words, structured into 3 to 4 paragraphs as described in the system instructions) based on today's feast day. Make sure it echoes the styles of the two pages.
 
 Please return a JSON response containing:
 1. "sourceFound": boolean (true if actual recent posts from the pages were found and utilized, false if the liturgical calendar fallback was used).
 2. "sourceSummary": string (a concise description of what was checked/found or the name of the liturgical feast used as fallback).
 3. "title": string (suggested title of the generated post).
-4. "caption": string (the drafted Facebook post caption, ending with a pious reflection).
+4. "caption": string (the drafted Facebook post caption, split into 3-4 paragraphs, ending with a pious reflection).
 5. "imageConcept": string (a clear, descriptive 1-sentence prompt for image generation, representing the subject, e.g. "St. Medard standing in Noyon cathedral holding a rose crown").
 
 IMPORTANT: Output ONLY the raw JSON object. Do not wrap it in markdown code blocks or add any other text outside the JSON.`;
